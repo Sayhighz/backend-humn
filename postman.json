@@ -1,0 +1,1040 @@
+{
+  "info": {
+    "name": "HUMN API - Complete Collection",
+    "description": "Complete API collection for HUMN voice collection platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "anthem_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contribution_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Verify World ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"worldIdProof\": \"proof_xxx123\",\n  \"nullifierHash\": \"0x1234567890abcdef\",\n  \"merkleRoot\": \"0xabcdef1234567890\",\n  \"signal\": \"humn_auth\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/world-id/verify",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "world-id", "verify"]
+            },
+            "description": "Verify World ID credential and authenticate user"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"refresh_token_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"humn_user_123\",\n  \"bio\": \"Passionate about global harmony\",\n  \"avatar\": \"https://example.com/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User Account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎙️ Contributions",
+      "item": [
+        {
+          "name": "Check Daily Limit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contributions/check-daily",
+              "host": ["{{base_url}}"],
+              "path": ["contributions", "check-daily"]
+            },
+            "description": "Check if user can contribute today"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Voice Contribution",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "audio",
+                  "type": "file",
+                  "src": "/path/to/voice.mp3",
+                  "description": "5-second audio file"
+                },
+                {
+                  "key": "countryCode",
+                  "value": "TH",
+                  "type": "text"
+                },
+                {
+                  "key": "latitude",
+                  "value": "13.7563",
+                  "type": "text"
+                },
+                {
+                  "key": "longitude",
+                  "value": "100.5018",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "Bangkok",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/contributions/upload",
+              "host": ["{{base_url}}"],
+              "path": ["contributions", "upload"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Contributions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contributions/my?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["contributions", "my"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Contribution By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contributions/{{contribution_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["contributions", "{{contribution_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Contribution",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contributions/{{contribution_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["contributions", "{{contribution_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Today's Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contributions/today",
+              "host": ["{{base_url}}"],
+              "path": ["contributions", "today"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎵 Anthems",
+      "item": [
+        {
+          "name": "Get All Anthems",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/anthems?page=1&limit=20&filter=all",
+              "host": ["{{base_url}}"],
+              "path": ["anthems"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "filter",
+                  "value": "all",
+                  "description": "all | contributed"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Today's Anthem",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/anthems/today",
+              "host": ["{{base_url}}"],
+              "path": ["anthems", "today"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Anthem By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/anthems/{{anthem_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["anthems", "{{anthem_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Anthem Segments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/anthems/{{anthem_id}}/segments",
+              "host": ["{{base_url}}"],
+              "path": ["anthems", "{{anthem_id}}", "segments"]
+            },
+            "description": "Get country segments with timestamps"
+          },
+          "response": []
+        },
+        {
+          "name": "Stream Anthem Audio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/anthems/{{anthem_id}}/stream",
+              "host": ["{{base_url}}"],
+              "path": ["anthems", "{{anthem_id}}", "stream"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Log Anthem Play",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timestamp\": \"2025-10-09T10:30:00Z\",\n  \"duration\": 180,\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/anthems/{{anthem_id}}/play",
+              "host": ["{{base_url}}"],
+              "path": ["anthems", "{{anthem_id}}", "play"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Anthem Contributors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/anthems/{{anthem_id}}/contributors?country=TH&page=1&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["anthems", "{{anthem_id}}", "contributors"],
+              "query": [
+                {
+                  "key": "country",
+                  "value": "TH",
+                  "description": "Filter by country code"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Share Anthem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"twitter\",\n  \"includeStats\": true,\n  \"highlightCountry\": \"TH\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/anthems/{{anthem_id}}/share",
+              "host": ["{{base_url}}"],
+              "path": ["anthems", "{{anthem_id}}", "share"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📊 Statistics",
+      "item": [
+        {
+          "name": "Get Global Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/global",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "global"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Country Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/countries?anthemId={{anthem_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "countries"],
+              "query": [
+                {
+                  "key": "anthemId",
+                  "value": "{{anthem_id}}",
+                  "description": "Optional: Filter by anthem"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/leaderboard?period=week&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "leaderboard"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "week",
+                  "description": "today | week | month | all"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Streak",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/user/{{user_id}}/streak",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "user", "{{user_id}}", "streak"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Countries Connected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/user/{{user_id}}/countries",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "user", "{{user_id}}", "countries"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Timeline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/user/{{user_id}}/timeline?from=2025-01-01&to=2025-10-09",
+              "host": ["{{base_url}}"],
+              "path": ["stats", "user", "{{user_id}}", "timeline"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2025-10-09"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📚 Library",
+      "item": [
+        {
+          "name": "Browse Anthems",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/library/anthems?sort=recent&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["library", "anthems"],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "recent",
+                  "description": "recent | popular | diverse"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "My Contributed Anthems",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/library/my-contributions?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["library", "my-contributions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Anthems",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/library/search?q=Thailand&date=2025-10-07&country=TH",
+              "host": ["{{base_url}}"],
+              "path": ["library", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Thailand",
+                  "description": "Search query"
+                },
+                {
+                  "key": "date",
+                  "value": "2025-10-07",
+                  "description": "Specific date"
+                },
+                {
+                  "key": "country",
+                  "value": "TH",
+                  "description": "Country code"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Featured Anthems",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/library/featured",
+              "host": ["{{base_url}}"],
+              "path": ["library", "featured"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications?page=1&unread=true",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "unread",
+                  "value": "true",
+                  "description": "Filter unread only"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications/:notificationId/read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", ":notificationId", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications/read-all",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "read-all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Preferences",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anthemReady\": true,\n  \"streakReminder\": true,\n  \"weeklyReport\": false,\n  \"newFollower\": true,\n  \"milestones\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/preferences",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "preferences"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Device Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceToken\": \"ExponentPushToken[xxxxxxxxxxxxxx]\",\n  \"platform\": \"ios\",\n  \"appVersion\": \"1.0.0\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/register-device",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "register-device"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Settings",
+      "item": [
+        {
+          "name": "Get Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["settings"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"audioQuality\": \"high\",\n  \"language\": \"th\",\n  \"theme\": \"dark\",\n  \"autoPlay\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["settings"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Privacy Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/settings/privacy",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "privacy"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Privacy Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"showProfile\": true,\n  \"shareStats\": true,\n  \"showCountry\": true,\n  \"allowMessaging\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/settings/privacy",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "privacy"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🌍 Geographic",
+      "item": [
+        {
+          "name": "Get All Countries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/geo/countries",
+              "host": ["{{base_url}}"],
+              "path": ["geo", "countries"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Country Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/geo/country/TH/stats",
+              "host": ["{{base_url}}"],
+              "path": ["geo", "country", "TH", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Timezone Distribution",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/geo/timezones?anthemId={{anthem_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["geo", "timezones"],
+              "query": [
+                {
+                  "key": "anthemId",
+                  "value": "{{anthem_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📥 Downloads",
+      "item": [
+        {
+          "name": "Request Download",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anthemId\": \"anthem-2025-10-07\",\n  \"purpose\": \"content_creation\",\n  \"email\": \"creator@example.com\",\n  \"projectDescription\": \"YouTube video about global unity\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/downloads/request",
+              "host": ["{{base_url}}"],
+              "path": ["downloads", "request"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check Download Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/downloads/:requestId",
+              "host": ["{{base_url}}"],
+              "path": ["downloads", ":requestId"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get License Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/downloads/license?anthemId={{anthem_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["downloads", "license"],
+              "query": [
+                {
+                  "key": "anthemId",
+                  "value": "{{anthem_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔧 Admin",
+      "item": [
+        {
+          "name": "Manual Generate Anthem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2025-10-07\",\n  \"force\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/anthems/generate",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "anthems", "generate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "System Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/system/health",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "system", "health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Admin Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/stats/overview",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "stats", "overview"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ban User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Spam or inappropriate content\",\n  \"duration\": \"permanent\",\n  \"notes\": \"Multiple violations of community guidelines\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/ban",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "ban"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
