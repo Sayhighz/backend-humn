@@ -34,7 +34,7 @@ export class BaseModel {
 
   // Find a single record by ID
   async findById(id) {
-    const queryText = `SELECT * FROM ${this.tableName} WHERE id = $1`;
+    const queryText = `SELECT * FROM ${this.tableName} WHERE user_id = $1`;
     const result = await query(queryText, [id]);
     return result.rows[0] || null;
   }
@@ -71,7 +71,7 @@ export class BaseModel {
     const queryText = `
       UPDATE ${this.tableName}
       SET ${setClause}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
+      WHERE user_id = $1
       RETURNING *
     `;
 
@@ -81,7 +81,7 @@ export class BaseModel {
 
   // Delete a record by ID
   async delete(id) {
-    const queryText = `DELETE FROM ${this.tableName} WHERE id = $1 RETURNING *`;
+    const queryText = `DELETE FROM ${this.tableName} WHERE user_id = $1 RETURNING *`;
     const result = await query(queryText, [id]);
     return result.rows[0] || null;
   }
@@ -166,7 +166,7 @@ export const dbUtils = {
   },
 
   // Helper for ORDER BY clause
-  buildOrderBy: (sortBy = 'id', sortOrder = 'ASC') => {
+  buildOrderBy: (sortBy = 'user_id', sortOrder = 'ASC') => {
     return `${sortBy} ${sortOrder.toUpperCase()}`;
   }
 };
