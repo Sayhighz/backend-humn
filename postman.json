@@ -58,7 +58,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"country_code\": \"TH\"\n}"
+              "raw": "{\n  \"username\": \"ploy_bkk\",\n  \"email\": \"ploy@example.com\",\n  \"country_code\": \"TH\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/mock-login",
