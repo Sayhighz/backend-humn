@@ -86,7 +86,7 @@
           "response": []
         },
         {
-          "name": "Verify World ID (Legacy)",
+          "name": "World ID - Verify (Real)",
           "request": {
             "method": "POST",
             "header": [
@@ -97,16 +97,37 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"worldIdProof\": \"proof_xxx123\",\n  \"nullifierHash\": \"0x1234567890abcdef\",\n  \"merkleRoot\": \"0xabcdef1234567890\",\n  \"signal\": \"humn_auth\"\n}"
+              "raw": "{\n  \"proof\": \"0x1234567890abcdef\",\n  \"merkle_root\": \"0xabcdef1234567890\",\n  \"nullifier_hash\": \"0x9876543210fedcba\",\n  \"credential_type\": \"orb\",\n  \"signal\": \"\",\n  \"userData\": {\n    \"username\": \"john_doe\",\n    \"email\": \"john@example.com\",\n    \"country_code\": \"TH\"\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/world-id/verify",
               "host": ["{{base_url}}"],
               "path": ["auth", "world-id", "verify"]
             },
-            "description": "Verify World ID credential and authenticate user (legacy endpoint)"
-          },
-          "response": []
+            "description": "Verify World ID credential (REAL)"
+          }
+        },
+        {
+          "name": "World ID - Verify Mock (Dev)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nullifier_hash\": \"mock_nullifier_{{$timestamp}}\",\n  \"credential_type\": \"orb\",\n  \"userData\": {\n    \"username\": \"dev_user_{{$timestamp}}\",\n    \"email\": \"dev{{$timestamp}}@example.com\",\n    \"country_code\": \"TH\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/world-id/verify-mock",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "world-id", "verify-mock"]
+            },
+            "description": "Mock World ID verification for development"
+          }
         },
         {
           "name": "Refresh Token",
@@ -120,31 +141,29 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"token\": \"{{access_token}}\"\n}"
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/refresh",
               "host": ["{{base_url}}"],
               "path": ["auth", "refresh"]
-            },
-            "description": "Refresh JWT access token",
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "if (pm.response.code === 200) {",
-                    "    const response = pm.response.json();",
-                    "    pm.collectionVariables.set('access_token', response.token);",
-                    "    console.log('Token refreshed and saved');",
-                    "}"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
+            }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', response.data.refreshToken);",
+                  "    console.log('Tokens refreshed and saved');",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Logout",
