@@ -119,8 +119,7 @@ export class User extends BaseModel {
   // Deactivate user (soft delete)
   async deactivateUser(userId) {
     return await this.update(userId, { 
-      is_active: false,
-      updated_at: new Date()
+      is_active: false
     });
   }
 
@@ -131,11 +130,11 @@ export class User extends BaseModel {
         u.user_id,
         u.username,
         u.created_at,
-        COUNT(DISTINCT c.id) as total_contributions,
-        COUNT(DISTINCT CASE WHEN c.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN c.id END) as recent_contributions,
-        MAX(c.created_at) as last_contribution_at
+        COUNT(DISTINCT c.contribution_id) as total_contributions,
+        COUNT(DISTINCT CASE WHEN c.recorded_at >= CURRENT_DATE - INTERVAL '30 days' THEN c.contribution_id END) as recent_contributions,
+        MAX(c.recorded_at) as last_contribution_at
       FROM users u
-      LEFT JOIN contributions c ON u.user_id = c.user_id
+      LEFT JOIN voice_contributions c ON u.user_id = c.user_id
       WHERE u.user_id = $1 AND u.is_active = true
       GROUP BY u.user_id, u.username, u.created_at
     `;
