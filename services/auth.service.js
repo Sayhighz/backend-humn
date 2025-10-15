@@ -8,6 +8,10 @@ import { errorResponse } from '../utils/response.js';
  */
 
 export class AuthService {
+  constructor() {
+    this.blacklistedTokens = new Set(); // เก็บ token ที่ถูก logout
+  }
+
   /**
    * Generate Access Token (short-lived)
    */
@@ -36,8 +40,8 @@ export class AuthService {
       type: 'refresh'
     };
 
-    const secret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'mock-refresh-secret';
-    const expiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d'; // 7 วัน
+    const secret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+    const expiresIn = process.env.JWT_REFRESH_EXPIRES_IN; // 7 วัน
 
     return jwt.sign(payload, secret, { expiresIn });
   }
@@ -52,8 +56,8 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
-      refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d'
+      accessExpiresIn: process.env.JWT_EXPIRES_IN,
+      refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN
     };
   }
 
@@ -76,10 +80,22 @@ export class AuthService {
   }
 
   /**
+   * Check if token is blacklisted
+   */
+  isTokenBlacklisted(token) {
+    return this.blacklistedTokens.has(token);
+  }
+
+  /**
    * Verify Access Token
    */
   verifyAccessToken(token) {
     try {
+      // Check if token is blacklisted
+      if (this.isTokenBlacklisted(token)) {
+        throw new Error('Token has been revoked');
+      }
+
       const secret = process.env.JWT_SECRET || 'mock-secret-key';
       const decoded = jwt.verify(token, secret);
       
@@ -90,6 +106,9 @@ export class AuthService {
       
       return decoded;
     } catch (error) {
+      if (error.message === 'Token has been revoked') {
+        throw error;
+      }
       throw new Error('Invalid access token');
     }
   }
@@ -277,12 +296,50 @@ export class AuthService {
   }
 
   /**
-   * Logout (invalidate token on client side)
+   * Logout - Blacklist token
    */
   async logout(token) {
-    // In a real implementation with Redis, you would blacklist the token
-    // For now, just return success
-    return { success: true, message: 'Logged out successfully' };
+    try {
+      if (!token) {
+        return { success: true, message: 'Logged out successfully' };
+      }
+
+      console.log('AUTH_SERVICE: Processing logout');
+
+      // Verify token before blacklisting (don't throw if invalid, just log it)
+      let decoded;
+      try {
+        decoded = this.verifyAccessToken(token);
+      } catch (error) {
+        console.log('AUTH_SERVICE: Token already invalid or expired:', error.message);
+        // Still return success - client-side token removal is enough
+        return { success: true, message: 'Logged out successfully' };
+      }
+      
+      // Add to blacklist
+      this.blacklistedTokens.add(token);
+      console.log('AUTH_SERVICE: Token added to blacklist');
+      
+      // Auto-remove from blacklist after token expiration
+      const expiresIn = (decoded.exp * 1000) - Date.now();
+      if (expiresIn > 0) {
+        setTimeout(() => {
+          this.blacklistedTokens.delete(token);
+          console.log('AUTH_SERVICE: Removed expired token from blacklist');
+        }, expiresIn);
+      }
+
+      console.log('AUTH_SERVICE: Logout successful');
+      return { 
+        success: true, 
+        message: 'Logged out successfully',
+        blacklistedTokens: this.blacklistedTokens.size 
+      };
+    } catch (error) {
+      console.error('AUTH_SERVICE: Logout error:', error);
+      // Still return success - logout should always succeed on client side
+      return { success: true, message: 'Logged out successfully' };
+    }
   }
 }
 

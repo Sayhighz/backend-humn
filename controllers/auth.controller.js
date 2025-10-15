@@ -155,6 +155,10 @@ export const authController = {
       const authHeader = req.headers.authorization;
       const token = authHeader && authHeader.split(' ')[1];
 
+      if (!token) {
+        return errorResponse(res, 'No token provided', 400);
+      }
+
       const result = await authService.logout(token);
 
       successResponse(res, result, 'Logged out successfully');
