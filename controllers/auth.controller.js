@@ -40,11 +40,8 @@ export const authController = {
         return errorResponse(res, 'Missing required fields: proof, merkle_root, nullifier_hash', 400);
       }
 
-      const isUsed = await worldIdService.isNullifierUsed(nullifier_hash);
-      if (isUsed) {
-        return errorResponse(res, 'This World ID has already been used', 400);
-      }
-
+      const existingUser = await worldIdService.isNullifierUsed(nullifier_hash);
+      
       const proofData = { proof, merkle_root, nullifier_hash, credential_type, signal };
       const result = await worldIdService.verifyAndCreateUser(proofData, userData, false);
 
@@ -56,10 +53,16 @@ export const authController = {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         accessExpiresIn: tokens.accessExpiresIn,
-        refreshExpiresIn: tokens.refreshExpiresIn
+        refreshExpiresIn: tokens.refreshExpiresIn,
+        isNewUser: !existingUser
       };
 
-      successResponse(res, response, 'World ID verification successful');
+      const message = existingUser 
+        ? 'World ID login successful' 
+        : 'World ID sign up successful';
+
+      successResponse(res, response, message);
+      
     } catch (error) {
       console.error('World ID verification error:', error);
       errorResponse(res, error.message || 'World ID verification failed', 400);
@@ -73,6 +76,7 @@ export const authController = {
   async verifyWorldIdMock(req, res) {
     try {
       console.log('AUTH_CONTROLLER: POST /api/v1/auth/world-id/verify-mock (MOCK)');
+      console.log('📥 Request body:', JSON.stringify(req.body, null, 2));
 
       if (!worldIdConfig.enableMock) {
         return errorResponse(res, 'Mock verification is disabled in production', 403);
@@ -84,13 +88,19 @@ export const authController = {
         return errorResponse(res, 'Missing required field: nullifier_hash', 400);
       }
 
-      const isUsed = await worldIdService.isNullifierUsed(nullifier_hash);
-      if (isUsed) {
-        return errorResponse(res, 'This nullifier hash has already been used', 400);
-      }
-
+      // Debug: ดูค่า nullifier_hash ที่ส่งมา
+      console.log('🔍 Received nullifier_hash:', nullifier_hash);
+      
+      const existingUser = await worldIdService.isNullifierUsed(nullifier_hash);
+      console.log('🔍 existingUser result:', existingUser);
+      
       const proofData = { nullifier_hash, credential_type };
+      
       const result = await worldIdService.verifyAndCreateUser(proofData, userData, true);
+      
+      // Debug: ดู user_id ที่ได้
+      console.log('🔍 Result user_id:', result.user.user_id);
+      console.log('🔍 Result nullifier_hash:', result.verification.nullifier_hash);
 
       const tokens = authService.generateTokens(result.user);
 
@@ -101,10 +111,16 @@ export const authController = {
         refreshToken: tokens.refreshToken,
         accessExpiresIn: tokens.accessExpiresIn,
         refreshExpiresIn: tokens.refreshExpiresIn,
+        isNewUser: !existingUser,
         warning: 'This is a MOCK verification for development only'
       };
 
-      successResponse(res, response, 'Mock World ID verification successful');
+      const message = existingUser 
+        ? 'Mock World ID login successful' 
+        : 'Mock World ID sign up successful';
+        
+      successResponse(res, response, message);
+      
     } catch (error) {
       console.error('Mock World ID verification error:', error);
       errorResponse(res, error.message || 'Mock verification failed', 400);

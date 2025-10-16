@@ -8,8 +8,6 @@ import { userModel } from '../models/user.model.js';
 export class WorldIdService {
   /**
    * Verify World ID proof (Real verification)
-   * @param {Object} proofData - World ID proof data
-   * @returns {Promise<Object>} Verification result
    */
   async verifyProof(proofData) {
     try {
@@ -17,12 +15,10 @@ export class WorldIdService {
 
       const { proof, merkle_root, nullifier_hash, credential_type } = proofData;
 
-      // Validate required fields
       if (!proof || !merkle_root || !nullifier_hash) {
         throw new Error('Missing required proof data');
       }
 
-      // Prepare verification request
       const verifyPayload = {
         proof,
         merkle_root,
@@ -34,7 +30,6 @@ export class WorldIdService {
 
       console.log('WORLDID_SERVICE: Sending verification request to World ID API');
 
-      // Call World ID verification API
       const response = await fetch(
         `${worldIdConfig.verifyEndpoint}/${worldIdConfig.appId}`,
         {
@@ -74,27 +69,24 @@ export class WorldIdService {
 
   /**
    * Mock World ID verification (Development only)
-   * @param {Object} proofData - Mock proof data
-   * @returns {Promise<Object>} Mock verification result
    */
   async verifyProofMock(proofData) {
     try {
       console.log('WORLDID_SERVICE: Verifying World ID proof (MOCK)');
 
       const { nullifier_hash, credential_type } = proofData;
+      
+      console.log('🔍 verifyProofMock - input nullifier_hash:', nullifier_hash);
 
-      // Validate nullifier hash format (basic check)
       if (!nullifier_hash || typeof nullifier_hash !== 'string') {
         throw new Error('Invalid nullifier_hash format');
       }
 
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Mock verification always succeeds in dev mode
       console.log('WORLDID_SERVICE: Mock verification successful');
-
-      return {
+      
+      const result = {
         success: true,
         verified: true,
         nullifier_hash,
@@ -102,6 +94,10 @@ export class WorldIdService {
         verification_level: 'orb',
         mock: true,
       };
+      
+      console.log('🔍 verifyProofMock - output nullifier_hash:', result.nullifier_hash);
+      
+      return result;
     } catch (error) {
       console.error('WORLDID_SERVICE: Error in mock verification:', error);
       throw error;
@@ -110,40 +106,51 @@ export class WorldIdService {
 
   /**
    * Verify and create/update user
-   * @param {Object} proofData - World ID proof data
-   * @param {Object} userData - Additional user data
-   * @param {boolean} useMock - Whether to use mock verification
-   * @returns {Promise<Object>} User and verification result
    */
   async verifyAndCreateUser(proofData, userData = {}, useMock = false) {
     try {
-      // Verify proof (real or mock)
+      console.log('🔍 verifyAndCreateUser - START');
+      console.log('🔍 Input proofData:', JSON.stringify(proofData, null, 2));
+      
       const verificationResult = useMock
         ? await this.verifyProofMock(proofData)
         : await this.verifyProof(proofData);
+
+      console.log('🔍 verificationResult:', JSON.stringify(verificationResult, null, 2));
 
       if (!verificationResult.verified) {
         throw new Error('World ID verification failed');
       }
 
-      // Check if user already exists with this nullifier_hash
+      console.log('🔍 Looking for existing user with nullifier_hash:', verificationResult.nullifier_hash);
+      
       const existingUser = await userModel.findOne(
         'nullifier_hash = $1',
         [verificationResult.nullifier_hash]
       );
 
+      console.log('🔍 existingUser found:', existingUser ? 'YES ✅' : 'NO ❌');
+      if (existingUser) {
+        console.log('🔍 existingUser data:', JSON.stringify({
+          user_id: existingUser.user_id,
+          nullifier_hash: existingUser.nullifier_hash,
+          username: existingUser.username
+        }, null, 2));
+      }
+
       let user;
 
       if (existingUser) {
-        // Update existing user
         console.log('WORLDID_SERVICE: User already exists, updating...');
+        
+        // ✅ ลบ updated_at ออก (BaseModel จะ set ให้เองอัตโนมัติ)
         user = await userModel.update(existingUser.user_id, {
           is_verified: true,
-          last_active_at: new Date(),
-          updated_at: new Date(),
+          last_active_at: new Date()
         });
+        
+        console.log('✅ Updated user_id:', user.user_id);
       } else {
-        // Create new user
         console.log('WORLDID_SERVICE: Creating new user...');
         
         const newUserData = {
@@ -156,7 +163,11 @@ export class WorldIdService {
           is_active: true,
         };
 
+        console.log('🔍 Creating user with data:', JSON.stringify(newUserData, null, 2));
+        
         user = await userModel.createUser(newUserData);
+        console.log('✅ Created user_id:', user.user_id);
+        console.log('✅ Created nullifier_hash:', user.nullifier_hash);
       }
 
       return {
@@ -182,16 +193,26 @@ export class WorldIdService {
 
   /**
    * Check if nullifier hash is already used
-   * @param {string} nullifierHash - Nullifier hash to check
-   * @returns {Promise<boolean>} Whether hash is used
    */
   async isNullifierUsed(nullifierHash) {
     try {
+      console.log('🔍 isNullifierUsed - checking:', nullifierHash);
+      
       const user = await userModel.findOne(
         'nullifier_hash = $1',
         [nullifierHash]
       );
-      return !!user;
+      
+      const result = !!user;
+      console.log('🔍 isNullifierUsed - result:', result);
+      if (user) {
+        console.log('🔍 Found user:', JSON.stringify({
+          user_id: user.user_id,
+          nullifier_hash: user.nullifier_hash
+        }, null, 2));
+      }
+      
+      return result;
     } catch (error) {
       console.error('WORLDID_SERVICE: Error checking nullifier:', error);
       return false;
@@ -199,7 +220,6 @@ export class WorldIdService {
   }
 }
 
-// Create and export World ID service instance
 export const worldIdService = new WorldIdService();
 
 export default worldIdService;

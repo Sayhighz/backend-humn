@@ -18,6 +18,8 @@ export class User extends BaseModel {
 
   // Create new user with password hashing
   async createUser(userData) {
+    console.log('🔍 USER_MODEL: createUser - input userData:', JSON.stringify(userData, null, 2));
+    
     const { password, ...otherData } = userData;
 
     // For mock authentication, password is optional
@@ -28,20 +30,32 @@ export class User extends BaseModel {
       hashedPassword = await bcrypt.hash(password, saltRounds);
     }
 
+    // ✅ ใช้ค่าที่ส่งมา ถ้าไม่มีค่าถึงจะสร้างใหม่
     const userToCreate = {
-       username: otherData.username,
-       email: otherData.email,
-       country_code: otherData.country_code,
-       world_id: `mock-world-id-${Date.now()}`, // Mock World ID
-       nullifier_hash: `mock-hash-${Date.now()}`, // Mock nullifier hash
-       is_verified: true, // Mock users are auto-verified
-       is_active: true,
-       created_at: new Date(),
-       updated_at: new Date(),
-       last_active_at: new Date()
-     };
+      username: otherData.username,
+      email: otherData.email,
+      country_code: otherData.country_code,
+      // ✅ ใช้ค่าที่ส่งมา หรือสร้างใหม่ถ้าไม่มี
+      world_id: otherData.world_id || `mock-world-id-${Date.now()}`,
+      nullifier_hash: otherData.nullifier_hash || `mock-hash-${Date.now()}`,
+      is_verified: otherData.is_verified !== undefined ? otherData.is_verified : true,
+      is_active: otherData.is_active !== undefined ? otherData.is_active : true,
+      created_at: new Date(),
+      updated_at: new Date(),
+      last_active_at: new Date()
+    };
 
-    return await this.create(userToCreate);
+    console.log('🔍 USER_MODEL: createUser - userToCreate:', JSON.stringify(userToCreate, null, 2));
+
+    const createdUser = await this.create(userToCreate);
+    
+    console.log('🔍 USER_MODEL: createUser - created user:', JSON.stringify({
+      user_id: createdUser.user_id,
+      nullifier_hash: createdUser.nullifier_hash,
+      world_id: createdUser.world_id
+    }, null, 2));
+    
+    return createdUser;
   }
 
   // Verify user password (removed - password column doesn't exist)
