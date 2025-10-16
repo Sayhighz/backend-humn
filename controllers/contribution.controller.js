@@ -1,4 +1,9 @@
-import { errorResponse, successResponse } from "../utils/response.js";
+import {
+  errorResponse,
+  successResponse,
+  unauthorizedResponse,
+  validationErrorResponse,
+} from "../utils/response.js";
 import contributionModel from "../models/contribution.model.js";
 import { query } from "../config/database.config.js";
 import { v4 as uuidv4 } from "uuid";
@@ -15,6 +20,7 @@ export const contributionController = {
    */
   async checkDailyContribution(req, res) {
     try {
+      if (!req.user) return unauthorizedResponse(res, "You must login first");
       const userId = req.user.user_id;
 
       // ดึง contribution ล่าสุดของ user
@@ -43,14 +49,33 @@ export const contributionController = {
         }
       }
 
-      res.json({
-        canContribute,
-        lastContribution: lastContributionTime,
-        nextAvailable,
-      });
+      let timeUntilNext = null;
+      if (!canContribute && nextAvailable) {
+        const diffMs = nextAvailable - new Date();
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        timeUntilNext = { hours, minutes, seconds };
+      }
+
+      successResponse(
+        res,
+        {
+          canContribute,
+          lastContribution: lastContributionTime,
+          nextAvailable,
+          timeUntilNext,
+        },
+        "Checked daily contribution"
+      );
     } catch (error) {
       console.error("Error checking daily contribution:", error);
-      res.status(500).json({ message: "Internal server error" });
+      errorResponse(
+        res,
+        "Error checking daily contribution",
+        500,
+        error.message
+      );
     }
   },
 
@@ -59,13 +84,11 @@ export const contributionController = {
    */
   async uploadContribution(req, res) {
     try {
-      // ดึง userId จาก middleware auth
+      if (!req.user) return unauthorizedResponse(res, "You must login first");
       const userId = req.user.user_id;
 
       // ตรวจสอบไฟล์ audio
-      if (!req.file) {
-        return errorResponse(res, "No audio file uploaded");
-      }
+      if (!req.file) return errorResponse(res, "No audio file uploaded");
 
       // ดึงข้อมูลจาก FormData
       const { metadata, latitude, longitude, countryCode, city } = req.body;
@@ -78,8 +101,13 @@ export const contributionController = {
       const audioFormat = path.extname(req.file.originalname).replace(".", "");
 
       // ตรวจสอบ daily anthem ของวันนี้
-      const today = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
+      const today = new Date().toLocaleDateString("sv-SE", {
+        timeZone: "Asia/Bangkok",
+      });
       const anthemId = `anthem-${today}`;
+
+      console.log(`ANTHEM_ID: ${anthemId}`);
+      console.log(`TODAY: ${today}`);
 
       // ถ้าไม่มี daily anthem วันนี้ ให้สร้าง
       let anthem = await query(
@@ -130,7 +158,7 @@ export const contributionController = {
       );
     } catch (error) {
       console.error("Error uploading contribution:", error);
-      errorResponse;
+      errorResponse(res, "Error uploading contribution", 500, error.message);
     }
   },
 
@@ -139,8 +167,7 @@ export const contributionController = {
    */
   async getMyContributions(req, res) {
     try {
-      console.log("CONTRIBUTION_CONTROLLER: GET /api/v1/contributions/my");
-
+      if (!req.user) return unauthorizedResponse(res, "You must login first");
       const userId = req.user.user_id; // ต้องมี auth middleware
 
       // อ่าน query params สำหรับ pagination
@@ -181,7 +208,12 @@ export const contributionController = {
       );
     } catch (error) {
       console.error("Error getting user contributions:", error);
-      errorResponse(res, "Failed to retrieve contributions");
+      errorResponse(
+        res,
+        "Failed to retrieve contributions",
+        500,
+        error.message
+      );
     }
   },
 
@@ -190,11 +222,13 @@ export const contributionController = {
    */
   async getContributionById(req, res) {
     try {
-      console.log(
-        "CONTRIBUTION_CONTROLLER: GET /api/v1/contributions/:contributionId"
-      );
-
       const { contributionId } = req.params;
+      if (!contributionId)
+        return validationErrorResponse(
+          res,
+          [{ field: "contributionId", message: "contributionId is required" }],
+          "Validation Error"
+        );
 
       // ดึง contribution
       const contributionResult = await query(
@@ -227,7 +261,12 @@ export const contributionController = {
       );
     } catch (error) {
       console.error("Error getting contribution by ID:", error);
-      errorResponse(res, "Failed to retrieve contribution details");
+      errorResponse(
+        res,
+        "Failed to retrieve contribution details",
+        500,
+        error.message
+      );
     }
   },
 
@@ -237,6 +276,12 @@ export const contributionController = {
   async deleteContribution(req, res) {
     try {
       const { contributionId } = req.params;
+      if (!contributionId)
+        return validationErrorResponse(
+          res,
+          [{ field: "contributionId", message: "contributionId is required" }],
+          "Validation Error"
+        );
 
       // ตรวจสอบว่า contribution ยังอยู่ในสถานะ 'uploaded' หรือ 'processing' เท่านั้น
       const checkResult = await query(
@@ -262,14 +307,10 @@ export const contributionController = {
         [contributionId]
       );
 
-      successResponse(
-        res,
-        { success: true },
-        "Contribution deleted successfully"
-      );
+      successResponse(res, null, "Contribution deleted successfully");
     } catch (error) {
       console.error("Error deleting contribution:", error);
-      errorResponse(res, "Failed to delete contribution");
+      errorResponse(res, 500, "Failed to delete contribution");
     }
   },
 
@@ -318,7 +359,12 @@ export const contributionController = {
       );
     } catch (error) {
       console.error("Error getting today's contributions:", error);
-      errorResponse(res, "Failed to retrieve today's contribution stats");
+      errorResponse(
+        res,
+        "Failed to retrieve today's contribution stats",
+        500,
+        error.message
+      );
     }
   },
 };
