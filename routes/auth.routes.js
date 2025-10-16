@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
-import { validateMockLogin, validateTokenRefresh, validateLogout } from '../validators/auth.validator.js';
+import { 
+  validateMockLogin, 
+  validateTokenRefresh, 
+  validateLogout,
+  validateWorldIdVerify,
+  validateWorldIdVerifyMock
+} from '../validators/auth.validator.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
@@ -8,8 +14,11 @@ const router = Router();
 // POST /api/v1/auth/mock-login - Mock login for development/testing
 router.post('/mock-login', validateMockLogin, authController.mockLogin);
 
-// POST /api/v1/auth/world-id/verify - Verify World ID authentication (placeholder)
-router.post('/world-id/verify', authController.verifyWorldId);
+// POST /api/v1/auth/world-id/verify - Verify World ID authentication (REAL)
+router.post('/world-id/verify', validateWorldIdVerify, authController.verifyWorldId);
+
+// POST /api/v1/auth/world-id/verify-mock - Mock World ID verification (DEV only)
+router.post('/world-id/verify-mock', validateWorldIdVerifyMock, authController.verifyWorldIdMock);
 
 // POST /api/v1/auth/refresh - Refresh access token
 router.post('/refresh', validateTokenRefresh, authController.refreshToken);
