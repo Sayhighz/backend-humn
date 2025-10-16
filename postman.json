@@ -104,7 +104,53 @@
               "host": ["{{base_url}}"],
               "path": ["auth", "world-id", "verify"]
             },
-            "description": "Verify World ID credential and authenticate user (legacy endpoint)"
+            "description": "Verify World ID credential (REAL)"
+          }
+        },
+        {
+          "name": "World ID - Verify Mock (Dev)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nullifier_hash\": \"null_th_004\",\n  \"credential_type\": \"orb\",\n  \"userData\": {\n    \"username\": \"ploy_bkk\",\n    \"email\": \"ploy@example.com\",\n    \"country_code\": \"TH\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/world-id/verify-mock",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "world-id", "verify-mock"]
+            },
+            "description": "Mock World ID verification สำหรับทดสอบใน Postman",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                    "    pm.collectionVariables.set('refresh_token', response.data.refreshToken);",
+                    "    pm.collectionVariables.set('user_id', response.data.user.user_id);",
+                    "    console.log('✅ Mock verification สำเร็จ!');",
+                    "    console.log('User ID:', response.data.user.user_id);",
+                    "    console.log('Username:', response.data.user.username);",
+                    "    console.log('Email:', response.data.user.email);",
+                    "    console.log('Access Token saved to collection variables');",
+                    "} else {",
+                    "    console.log('❌ Mock verification ไม่สำเร็จ:', pm.response.code);",
+                    "    console.log('Response:', pm.response.text());",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
           },
           "response": []
         },
